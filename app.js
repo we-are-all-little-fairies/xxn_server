@@ -13,7 +13,7 @@ var log4js = require("log4js");
 let date = {
     appenders: {
         'files': {
-            type: 'datefile',
+            type: 'dateFile',
             filename: 'logs/magic',
             pattern: '-yyyy-mm-dd-hh-mm.log',
             //包含模型  不加这一句的话和上面的方式  输出一样
@@ -69,6 +69,7 @@ app.use(
         algorithms: ['HS256'], // 使用何种加密算法解析
     })
         .unless({path: ['/magic/register']})
+        .unless({path: ['/magic/xhs']})
 )
 
 // app.use(logger('dev'));

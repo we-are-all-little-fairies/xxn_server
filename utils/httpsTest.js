@@ -2,7 +2,7 @@ let https;
 try {
     https = require('node:https');
 } catch (err) {
-    console.error('https support is disabled!');
+    console.error('https support is disabled!', err);
 }
 (async () => {
     const chalk = await import("chalk")
