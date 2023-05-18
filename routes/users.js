@@ -2,6 +2,10 @@ var express = require('express');
 var router = express.Router();
 const requestXXN = require('../xxn')
 
+
+const jwt = require('jsonwebtoken')
+const SECRET_KEY = 'we_are_xxn_xixixi^-^'
+
 const testJSON = {
     role: 'assistant',
     content: '标题1：🍛一些关于咖喱牛腩的秘密，你知道吗？\n' +
@@ -34,7 +38,7 @@ const testJSON = {
 router.post('/', function (req, res, next) {
     // res.json(testJSON)
     // return
-    console.log(req.body)
+
     if (!req.body.content) {
         res.json({
             err: 400,
@@ -52,6 +56,42 @@ router.post('/', function (req, res, next) {
         res.json({
             errmsg: err
         })
+    })
+});
+
+const GOD_TOKEN = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7Im5hbWUiOiJ6cyIsInBhc3N3b3JkIjoxMjN9LCJpYXQiOjE2ODQzOTI4NDcsImV4cCI6MTY4NDQ3OTI0N30.awkjAJhLorZNIqfPCv4LGu0jjMfO2SheUzODt-LqFfA"
+/* GET users listing. */
+router.post('/register', function (req, res, next) {
+
+    //只有带了上帝token的才可以注册用户
+
+    if (req.header('authorization') !== GOD_TOKEN) {
+        return res.json({
+            code: 40000,
+            msg: "u has not permission to register a user"
+        })
+    }
+
+    if (!req.body.name || !req.body.password) {
+        return res.json({
+            code: 40001,
+            msg: "plz input ur user name and password"
+        })
+    }
+
+    const token = jwt.sign(
+        {user: {name: req.body.name, password: req.body.password}},
+        SECRET_KEY,
+        {expiresIn: '24h'}
+    )
+    console.log('🚀 → token', token)
+
+    //存db
+
+    res.send({
+        status: 200,
+        message: 'login success!',
+        token,
     })
 });
 
