@@ -12,10 +12,10 @@ try {
 
 const requestXXHByOtherHttpserver = (requestParams, singleChunk, end, onErr) => {
 
-    const {theme, people, require, voice, hot} = requestParams
+    const {prompt} = requestParams
 
     const postData = JSON.stringify({
-            prompt: `1、主题：${theme}\\n2、你的受众人群：${people}\\n3、受众对于我们产品的需求：${require}\\n4、表达语气：${voice}\\n5、热点结合：${hot}`
+            prompt: prompt
         }
     );
     const options = {

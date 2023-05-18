@@ -5,7 +5,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+var magicRouter = require('./routes/magic');
 
 var app = express();
 // 允许跨域资源共享
@@ -28,8 +28,7 @@ app.use(
         secret: SECRET_KEY,
         algorithms: ['HS256'], // 使用何种加密算法解析
     })
-        .unless({path: ['/users/register']})
-        .unless({path: ['/users/test']})
+        .unless({path: ['/magic/register']})
 )
 
 app.use(logger('dev'));
@@ -39,7 +38,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/magic', magicRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

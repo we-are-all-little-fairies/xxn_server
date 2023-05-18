@@ -36,12 +36,12 @@ const testJSON = {
 }
 
 /* GET users listing. */
-router.post('/', function (req, res, next) {
+router.post('/bypass', function (req, res, next) {
     // res.json(testJSON)
     // return
 
 
-    if (!req.body.content) {
+    if (!req.body.prompt) {
         res.json({
             err: 400,
             msg: "no content params"
@@ -49,7 +49,7 @@ router.post('/', function (req, res, next) {
 
         return
     }
-    requestXXN(req.body.content).then(
+    requestXXN(req.body.prompt).then(
         msg => {
             console.log("success")
             res.json(msg)
@@ -62,12 +62,12 @@ router.post('/', function (req, res, next) {
 });
 
 /* GET users listing. */
-router.post('/test', function (req, res, next) {
+router.post('/xhs', function (req, res, next) {
     // res.json(testJSON)
     // return
 
 
-    if (!req.body.theme) {
+    if (!req.body.prompt) {
         res.json({
             err: 400,
             msg: "no content params"
