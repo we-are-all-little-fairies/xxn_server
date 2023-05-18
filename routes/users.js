@@ -1,9 +1,10 @@
 var express = require('express');
 var router = express.Router();
-const requestXXN = require('../xxn')
+const requestXXN = require('../utils/xxn')
 
 
 const jwt = require('jsonwebtoken')
+const {requestXXHByOtherHttpserver} = require("../utils/httpsTest");
 const SECRET_KEY = 'we_are_xxn_xixixi^-^'
 
 const testJSON = {
@@ -39,6 +40,7 @@ router.post('/', function (req, res, next) {
     // res.json(testJSON)
     // return
 
+
     if (!req.body.content) {
         res.json({
             err: 400,
@@ -58,6 +60,39 @@ router.post('/', function (req, res, next) {
         })
     })
 });
+
+/* GET users listing. */
+router.post('/test', function (req, res, next) {
+    // res.json(testJSON)
+    // return
+
+
+    if (!req.body.theme) {
+        res.json({
+            err: 400,
+            msg: "no content params"
+        })
+
+        return
+    }
+
+    requestXXHByOtherHttpserver(req.body,
+        (chunk) => {
+            res.write(chunk)
+        },
+        (end) => {
+            res.end()
+        },
+        (error) => {
+            res.json({
+                code: 5000,
+                msg: error
+            })
+        }
+    )
+
+});
+
 
 const GOD_TOKEN = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7Im5hbWUiOiJ6cyIsInBhc3N3b3JkIjoxMjN9LCJpYXQiOjE2ODQzOTI4NDcsImV4cCI6MTY4NDQ3OTI0N30.awkjAJhLorZNIqfPCv4LGu0jjMfO2SheUzODt-LqFfA"
 /* GET users listing. */

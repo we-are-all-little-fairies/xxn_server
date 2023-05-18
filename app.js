@@ -28,7 +28,8 @@ app.use(
         secret: SECRET_KEY,
         algorithms: ['HS256'], // 使用何种加密算法解析
     })
-        .unless({path: ['/users/register']}) // 登录页无需校验
+        .unless({path: ['/users/register']})
+        .unless({path: ['/users/test']})
 )
 
 app.use(logger('dev'));
