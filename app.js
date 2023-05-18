@@ -2,12 +2,52 @@ var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+// var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
 var magicRouter = require('./routes/magic');
 
+
+var log4js = require("log4js");
+
+let date = {
+    appenders: {
+        'files': {
+            type: 'datefile',
+            filename: 'logs/magic',
+            pattern: '-yyyy-mm-dd-hh-mm.log',
+            //包含模型  不加这一句的话和上面的方式  输出一样
+            alwaysIncludePattern: true
+        },
+        'out': { type: 'stdout' }
+    },
+    categories: {
+        default: {
+            appenders: ['files','out'],
+            level: "info"
+        }
+    },
+    disableClustering: true
+}
+
+log4js.configure(date);
+
+var logger = log4js.getLogger("cheese");
+
+
 var app = express();
+
+// app.use(log4js.connectLogger(logger, { level: "auto" }));
+app.use(
+    log4js.connectLogger(logger, {
+        level: "auto",
+        // include the Express request ID in the logs
+        format: (req, res, format) =>
+            format(
+                `:remote-addr - ${req.id} - ":method :url HTTP/:http-version" :status :content-length ":referrer" ":user-agent"`
+            ),
+    })
+);
 // 允许跨域资源共享
 const cors = require("cors");
 app.use(cors());
@@ -31,7 +71,7 @@ app.use(
         .unless({path: ['/magic/register']})
 )
 
-app.use(logger('dev'));
+// app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 app.use(cookieParser());
