@@ -77,53 +77,69 @@ router.post('/xhs', function (req, res, next) {
     }
 
 
-    if (!req.auth) {
-        return res.json(
-            HTTP_CODE.AUTH_ERROR
-        )
-    }
-
-    //检查用户是否在数据库中，在数据库中，并且retry大于0，才可以请求接口
-    findUser(req.auth.user)
-        .then(user => {
-            dbLogger.info("find user success", user)
-            if (user == null) {
-                return res.json(
-                    HTTP_CODE.AUTH_ERROR
-                )
-            }
-
-            if (!user.retry || user.retry <= 0) {
-                return res.json(
-                    HTTP_CODE.NO_RETRY_TIME_ERROR
-                )
-            }
-
-
-            requestXXHByOtherHttpserver(req.body,
-                (chunk) => {
-                    res.write(chunk)
-                },
-                (end) => {
-                    res.end()
-                    decreaseTryTime(req.auth.user)
-                },
-                (error) => {
-                    res.json({
-                        ...HTTP_CODE.INTERNAL_ERROR,
-                        detail: error
-                    })
-                }
-            )
-
-        })
-        .catch(err => {
-            dbLogger.error("find user failed", err)
+    requestXXHByOtherHttpserver(req.body,
+        (chunk) => {
+            res.write(chunk)
+        },
+        (end) => {
+            res.end()
+            // decreaseTryTime(req.auth.user)
+        },
+        (error) => {
             res.json({
                 ...HTTP_CODE.INTERNAL_ERROR,
-                detail: err
+                detail: error
             })
-        })
+        }
+    )
+
+    // if (!req.auth) {
+    //     return res.json(
+    //         HTTP_CODE.AUTH_ERROR
+    //     )
+    // }
+
+    //检查用户是否在数据库中，在数据库中，并且retry大于0，才可以请求接口
+    // findUser(req.auth.user)
+    //     .then(user => {
+    //         dbLogger.info("find user success", user)
+    //         if (user == null) {
+    //             return res.json(
+    //                 HTTP_CODE.AUTH_ERROR
+    //             )
+    //         }
+    //
+    //         if (!user.retry || user.retry <= 0) {
+    //             return res.json(
+    //                 HTTP_CODE.NO_RETRY_TIME_ERROR
+    //             )
+    //         }
+    //
+    //
+    //         requestXXHByOtherHttpserver(req.body,
+    //             (chunk) => {
+    //                 res.write(chunk)
+    //             },
+    //             (end) => {
+    //                 res.end()
+    //                 decreaseTryTime(req.auth.user)
+    //             },
+    //             (error) => {
+    //                 res.json({
+    //                     ...HTTP_CODE.INTERNAL_ERROR,
+    //                     detail: error
+    //                 })
+    //             }
+    //         )
+    //
+    //     })
+    //     .catch(err => {
+    //         dbLogger.error("find user failed", err)
+    //         res.json({
+    //             ...HTTP_CODE.INTERNAL_ERROR,
+    //             detail: err
+    //         })
+    //     })
 
 
 });

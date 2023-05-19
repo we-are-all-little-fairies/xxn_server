@@ -42,16 +42,18 @@ const requestXXHByOtherHttpserver = (requestParams, singleChunk, end, onErr) => 
     let request = https.request(options, res => {
         let list = [];
         res.on('data', chunk => {
-            console.log(chunk.toString())
+            actionLogger.log(chunk.toString())
             list.push(chunk);
             singleChunk(chunk)
         });
-        res.on('end', () => {
+        res.on('end', (msg) => {
             // const {data} = JSON.parse(Buffer.concat(list).toString());
+            actionLogger.log("request end", msg)
+
             end(list.toString())
         });
     }).on('error', err => {
-        console.log('Error: ', err.message);
+        actionLogger.log('Error: ', err.message);
         onErr(err)
     });
 
