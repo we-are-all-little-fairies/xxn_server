@@ -119,7 +119,10 @@ router.post('/xhs', function (req, res, next) {
         })
         .catch(err => {
             dbLogger.error("find user failed", err)
-
+            res.json({
+                ...HTTP_CODE.INTERNAL_ERROR,
+                detail: err
+            })
         })
 
 
