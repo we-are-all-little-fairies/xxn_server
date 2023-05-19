@@ -8,9 +8,7 @@ const client = new MongoClient(url, {
             version: ServerApiVersion.v1,
             strict: true,
             deprecationErrors: true,
-        },
-        minPoolSize: 30,
-        maxIdleTimeMS: 400
+        }
     }
 );
 
