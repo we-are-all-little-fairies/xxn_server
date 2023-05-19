@@ -93,7 +93,7 @@ app.use(
         algorithms: ['HS256'], // 使用何种加密算法解析
     })
         .unless({path: ['/users/register']})
-        // .unless({path: ['/magic/xhs']})
+        .unless({path: ['/magic/xhs']})
 )
 
 // app.use(logger('dev'));
