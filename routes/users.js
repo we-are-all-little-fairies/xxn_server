@@ -58,6 +58,8 @@ router.get('/query', function (req, res, next) {
                     ...HTTP_CODE.SUCCESS,
                     retry: dbRes.retry
                 })
+            }else {
+                res.json({...HTTP_CODE.INTERNAL_ERROR, detail: "no user"})
             }
         }
     )

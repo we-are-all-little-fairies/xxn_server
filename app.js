@@ -68,7 +68,7 @@ app.use(
         // include the Express request ID in the logs
         format: (req, res, format) =>
             format(
-                `:remote-addr - ${req.id} - ":method :url HTTP/:http-version" :status :content-length ":referrer" ":user-agent" \n query - ${JSON.stringify(req.query)} \n requestBody - ${JSON.stringify(req.body)}`
+                `:remote-addr - ${req.id} - ":method :url HTTP/:http-version" :status \n headers - ${JSON.stringify(req.headers)} \n query - ${JSON.stringify(req.query)} \n requestBody - ${JSON.stringify(req.body)}`
             ),
     })
 );
