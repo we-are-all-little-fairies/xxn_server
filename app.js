@@ -6,24 +6,47 @@ var cookieParser = require('cookie-parser');
 
 var indexRouter = require('./routes/index');
 var magicRouter = require('./routes/magic');
+var userRouter = require('./routes/users');
 
 
 var log4js = require("log4js");
 
 let date = {
     appenders: {
-        'files': {
+        'httpRequestFiles': {
             type: 'dateFile',
-            filename: 'logs/magic',
+            filename: 'httpLogs/magic',
             pattern: '-yyyy-mm-dd-hh-mm.log',
             //包含模型  不加这一句的话和上面的方式  输出一样
             alwaysIncludePattern: true
         },
-        'out': { type: 'stdout' }
+        'actionLogs': {
+            type: 'dateFile',
+            filename: 'actionLogs/magic',
+            pattern: '-yyyy-mm-dd-hh-mm.log',
+            //包含模型  不加这一句的话和上面的方式  输出一样
+            alwaysIncludePattern: true
+        },
+        'dbLogs': {
+            type: 'dateFile',
+            filename: 'dbLogs/magic',
+            pattern: '-yyyy-mm-dd-hh-mm.log',
+            //包含模型  不加这一句的话和上面的方式  输出一样
+            alwaysIncludePattern: true
+        },
+        'out': {type: 'stdout'}
     },
     categories: {
         default: {
-            appenders: ['files','out'],
+            appenders: ['httpRequestFiles', 'out'],
+            level: "info"
+        },
+        cheese: {
+            appenders: ['actionLogs', 'out'],
+            level: "info"
+        },
+        dblogs: {
+            appenders: ['actionLogs', 'out'],
             level: "info"
         }
     },
@@ -32,9 +55,10 @@ let date = {
 
 log4js.configure(date);
 
-var logger = log4js.getLogger("cheese");
+var logger = log4js.getLogger("default");
 
-
+global.actionLogger = log4js.getLogger("cheese");
+global.dbLogger = log4js.getLogger("dblogs");
 var app = express();
 
 // app.use(log4js.connectLogger(logger, { level: "auto" }));
@@ -44,7 +68,7 @@ app.use(
         // include the Express request ID in the logs
         format: (req, res, format) =>
             format(
-                `:remote-addr - ${req.id} - ":method :url HTTP/:http-version" :status :content-length ":referrer" ":user-agent"`
+                `:remote-addr - ${req.id} - ":method :url HTTP/:http-version" :status :content-length ":referrer" ":user-agent" \n query - ${JSON.stringify(req.query)} \n requestBody - ${JSON.stringify(req.body)}`
             ),
     })
 );
@@ -59,7 +83,7 @@ app.set('view engine', 'jade');
 // app.js
 // 导入校验token的模块, 解析JWT字符串, 还原成 JSON 对象 的模块
 const expressjwt = require("express-jwt");
-const SECRET_KEY = 'we_are_xxn_xixixi^-^' // 与生成token的密钥要一致!
+global.SECRET_KEY = 'we_are_xxn_xixixi^-^' // 与生成token的密钥要一致!
 
 // 1. 使用中间件解析token
 // 2. 使用 .unless 排除无需校验的路由(比如: 登录)
@@ -68,8 +92,8 @@ app.use(
         secret: SECRET_KEY,
         algorithms: ['HS256'], // 使用何种加密算法解析
     })
-        .unless({path: ['/magic/register']})
-        .unless({path: ['/magic/xhs']})
+        .unless({path: ['/users/register']})
+        // .unless({path: ['/magic/xhs']})
 )
 
 // app.use(logger('dev'));
@@ -80,6 +104,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/magic', magicRouter);
+app.use('/users', userRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -104,6 +129,14 @@ app.use(function (err, req, res, next) {
     // render the error page
     res.status(err.status || 500);
     res.render('error');
+});
+
+
+// error handler
+//检查token使用次数，如果超过或者用户不存在，不能调用接口
+app.use(function (err, req, res, next) {
+
+    next()
 });
 
 

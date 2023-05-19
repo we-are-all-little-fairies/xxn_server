@@ -3,9 +3,9 @@ var router = express.Router();
 const requestXXN = require('../utils/xxn')
 
 
-const jwt = require('jsonwebtoken')
 const {requestXXHByOtherHttpserver} = require("../utils/httpsTest");
-const SECRET_KEY = 'we_are_xxn_xixixi^-^'
+const {HTTP_CODE} = require("../HTTP_CODE");
+const {findUser, decreaseTryTime} = require("../db/interfaces/users");
 
 const testJSON = {
     role: 'assistant',
@@ -76,58 +76,54 @@ router.post('/xhs', function (req, res, next) {
         return
     }
 
-    requestXXHByOtherHttpserver(req.body,
-        (chunk) => {
-            res.write(chunk)
-        },
-        (end) => {
-            res.end()
-        },
-        (error) => {
-            res.json({
-                code: 5000,
-                msg: error
-            })
-        }
-    )
+
+    if (!req.auth) {
+        return res.json(
+            HTTP_CODE.AUTH_ERROR
+        )
+    }
+
+    //检查用户是否在数据库中，在数据库中，并且retry大于0，才可以请求接口
+    findUser(req.auth.user)
+        .then(user => {
+            dbLogger.info("find user success", user)
+            if (user == null) {
+                return res.json(
+                    HTTP_CODE.AUTH_ERROR
+                )
+            }
+
+            if (!user.retry || user.retry <= 0) {
+                return res.json(
+                    HTTP_CODE.NO_RETRY_TIME_ERROR
+                )
+            }
+
+
+            requestXXHByOtherHttpserver(req.body,
+                (chunk) => {
+                    res.write(chunk)
+                },
+                (end) => {
+                    res.end()
+                    decreaseTryTime(req.auth.user)
+                },
+                (error) => {
+                    res.json({
+                        ...HTTP_CODE.INTERNAL_ERROR,
+                        detail: error
+                    })
+                }
+            )
+
+        })
+        .catch(err => {
+            dbLogger.error("find user failed", err)
+
+        })
+
 
 });
 
-
-const GOD_TOKEN = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7Im5hbWUiOiJ6cyIsInBhc3N3b3JkIjoxMjN9LCJpYXQiOjE2ODQzOTI4NDcsImV4cCI6MTY4NDQ3OTI0N30.awkjAJhLorZNIqfPCv4LGu0jjMfO2SheUzODt-LqFfA"
-/* GET users listing. */
-router.post('/register', function (req, res, next) {
-
-    //只有带了上帝token的才可以注册用户
-
-    if (req.header('authorization') !== GOD_TOKEN) {
-        return res.json({
-            code: 40000,
-            msg: "u has not permission to register a user"
-        })
-    }
-
-    if (!req.body.name || !req.body.password) {
-        return res.json({
-            code: 40001,
-            msg: "plz input ur user name and password"
-        })
-    }
-
-    const token = jwt.sign(
-        {user: {name: req.body.name, password: req.body.password}},
-        SECRET_KEY,
-        {expiresIn: '24h'}
-    )
-    console.log('🚀 → token', token)
-
-    //存db
-
-    res.send({
-        status: 200,
-        message: 'login success!',
-        token,
-    })
-});
 
 module.exports = router;
