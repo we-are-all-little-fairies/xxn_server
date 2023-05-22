@@ -94,6 +94,7 @@ app.use(
     })
         .unless({path: ['/users/register']})
         .unless({path: ['/magic/xhs']})
+        .unless({path: ['/magic/bypass']})
 )
 
 // app.use(logger('dev'));

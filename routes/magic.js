@@ -41,7 +41,7 @@ router.post('/bypass', function (req, res, next) {
     // return
 
 
-    if (!req.body.prompt) {
+    if (!req.body) {
         res.json({
             err: 400,
             msg: "no content params"
@@ -49,16 +49,19 @@ router.post('/bypass', function (req, res, next) {
 
         return
     }
-    new RequestFactory(QuestType.ORIGIN).conductChoice().requestGPT(req.body.prompt).then(
-        msg => {
-            console.log("success")
-            res.json(msg)
+    new RequestFactory(QuestType.HAHA).conductChoice().requestGPT(req.body, (chunk) => {
+            res.write(chunk)
         },
-    ).catch(err => {
-        res.json({
-            errmsg: err
+        (end) => {
+            res.end()
+            // decreaseTryTime(req.auth.user)
+        },
+        (error) => {
+            res.json({
+                ...HTTP_CODE.INTERNAL_ERROR,
+                detail: error
+            })
         })
-    })
 });
 
 /* GET users listing. */

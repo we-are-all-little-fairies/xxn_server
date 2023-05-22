@@ -33,26 +33,7 @@ try {
 //   --compressed
 class HAHARequester extends RequestGPT {
     async requestGPT(requestParams, singleChunk, end, onErr) {
-
-        const {prompt} = requestParams;
-
-        const postData = JSON.stringify({
-                messages: [
-                    {
-                        role: "system",
-                        content: "你是小红书爆款写作专家，每次创作，首先产出 5 个标题（含适当的 emoji 表情），其次产出 1 个正文（每一个段落含有适当的 emoji 表情，文末有合适的 tag 标签）"
-                    },
-                    {
-                        role: "user",
-                        content: prompt
-                    }
-                ],
-                stream: true,
-                model: "gpt-3.5-turbo",
-                temperature: 1,
-                presence_penalty: 0
-            }
-        );
+        const postData = JSON.stringify(requestParams);
         const options = {
             hostname: 'hi.haha.ai',
             port: 443,

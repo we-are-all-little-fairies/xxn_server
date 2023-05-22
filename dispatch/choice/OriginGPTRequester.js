@@ -23,6 +23,8 @@ const requestXXN = async (content, singleChunk, end, onErr) => {
         user: "hongchen123"
     });
     console.log(completion.data.choices[0].message);
+    singleChunk(completion.data.choices[0].message)
+    end(completion.data.choices[0].message)
     return completion.data.choices[0].message
 }
 
