@@ -72,18 +72,18 @@ class HAHARequester extends RequestGPT {
             },
         };
         let request = https.request(options, res => {
+
             let list = [];
             res.on('data', chunk => {
                 actionLogger.log(chunk.toString())
                 list.push(chunk);
                 singleChunk(chunk)
-
-                console.log(chunk.toString())
             });
             res.on('end', (msg) => {
                 actionLogger.log("request end", msg)
                 end(list.toString())
             });
+
         }).on('error', err => {
             actionLogger.log('Error: ', err.message);
             onErr(err)
