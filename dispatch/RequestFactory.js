@@ -1,10 +1,12 @@
 const {RedRequester} = require("./choice/RedRequester");
 const {HAHARequester} = require("./choice/HAHARequester");
 const {OriginGPTRequester} = require("./choice/OriginGPTRequester");
+const {AIPicsRequester} = require("./choice/AIPicsRequester");
 QuestType = {
     RED: 1,
     HAHA: 2,
-    ORIGIN: 3
+    ORIGIN: 3,
+    AI_PICS: 4
 }
 module.exports.QuestType = QuestType
 
@@ -23,6 +25,8 @@ class RequestFactory {
                 return new HAHARequester()
             case QuestType.ORIGIN:
                 return new OriginGPTRequester()
+            case QuestType.AI_PICS:
+                return new AIPicsRequester()
         }
     }
 
