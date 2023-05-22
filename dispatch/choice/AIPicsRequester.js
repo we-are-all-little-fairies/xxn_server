@@ -25,7 +25,11 @@ function generatePics(content, success, err) {
                 ws.send(JSON.stringify(sendData()))
                 break
             case "process_completed":
-                success(json)
+                if (json.output.data) {
+                    success(json.output.data)
+                } else {
+                    err(json)
+                }
                 break
         }
     });

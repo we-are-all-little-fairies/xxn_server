@@ -179,7 +179,10 @@ router.post("/generate/pics", function (req, res, next) {
 
         },
         (end) => {
-            res.json(end)
+            res.json({
+                ...HTTP_CODE.SUCCESS,
+                data: end.shift()
+            })
             // decreaseTryTime(req.auth.user)
         },
         (error) => {
