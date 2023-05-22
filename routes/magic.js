@@ -1,11 +1,11 @@
 var express = require('express');
 var router = express.Router();
-const requestXXN = require('../utils/xxn')
+const requestXXN = require('../dispatch/choice/OriginGPTRequester')
 
 
-const {requestXXHByOtherHttpserver} = require("../utils/httpsTest");
 const {HTTP_CODE} = require("../HTTP_CODE");
 const {findUser, decreaseTryTime} = require("../db/interfaces/users");
+const {RequestFactory, QuestType} = require("../dispatch/RequestFactory");
 
 const testJSON = {
     role: 'assistant',
@@ -49,7 +49,7 @@ router.post('/bypass', function (req, res, next) {
 
         return
     }
-    requestXXN(req.body.prompt).then(
+    new RequestFactory(QuestType.ORIGIN).conductChoice().requestGPT(req.body.prompt).then(
         msg => {
             console.log("success")
             res.json(msg)
@@ -63,9 +63,6 @@ router.post('/bypass', function (req, res, next) {
 
 /* GET users listing. */
 router.post('/xhs', function (req, res, next) {
-    // res.json(testJSON)
-    // return
-
 
     if (!req.body.prompt) {
         res.json({
@@ -77,7 +74,7 @@ router.post('/xhs', function (req, res, next) {
     }
 
 
-    requestXXHByOtherHttpserver(req.body,
+    new RequestFactory(QuestType.HAHA).conductChoice().funRequest(req.body,
         (chunk) => {
             res.write(chunk)
         },

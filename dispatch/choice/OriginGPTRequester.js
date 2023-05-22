@@ -1,4 +1,5 @@
 const {Configuration, OpenAIApi} = require("openai");
+const {RequestGPT} = require("./RequestGPT");
 
 const configuration = new Configuration({
     apiKey: "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",
@@ -6,7 +7,7 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 
-const requestXXN = async (content) => {
+const requestXXN = async (content, singleChunk, end, onErr) => {
     const completion = await openai.createChatCompletion({
         model: "gpt-3.5-turbo",
         messages: [
@@ -26,5 +27,11 @@ const requestXXN = async (content) => {
 }
 
 
-module.exports = requestXXN
+class OriginGPTRequester extends RequestGPT {
+    async requestGPT(requestParams, singleChunk, end, onErr) {
+        return requestXXN(requestParams, singleChunk, end, onErr)
+    }
+}
+
+module.exports.OriginGPTRequester = OriginGPTRequester
 
