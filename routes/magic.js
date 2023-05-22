@@ -74,7 +74,7 @@ router.post('/xhs', function (req, res, next) {
     }
 
 
-    new RequestFactory(QuestType.HAHA).conductChoice().requestGPT(req.body,
+    new RequestFactory(QuestType.RED).conductChoice().requestGPT(req.body,
         (chunk) => {
             res.write(chunk)
         },
