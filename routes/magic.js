@@ -2,11 +2,10 @@ var express = require("express");
 var router = express.Router();
 const requestXXN = require("../dispatch/choice/OriginGPTRequester");
 
-const {HTTP_CODE} = require("../HTTP_CODE");
-const {findUser, decreaseTryTime} = require("../db/interfaces/users");
-const {RequestFactory, QuestType} = require("../dispatch/RequestFactory");
-const {generatePics} = require("../dispatch/choice/AIPicsRequester");
-
+const { HTTP_CODE } = require("../HTTP_CODE");
+const { findUser, decreaseTryTime } = require("../db/interfaces/users");
+const { RequestFactory, QuestType } = require("../dispatch/RequestFactory");
+const { generatePics } = require("../dispatch/choice/AIPicsRequester");
 
 const xhsTemplete = `从现在开始，你是一个小红书文案助手，你会根据用户所提供的内容和要求来写作。你的写作风格应该符合小红书的风格：
 1.以亲身经历和实际操作为基础,注重详细的描述和实用的建议，以帮助其他用户更好地了解和应用这些知识
@@ -40,158 +39,155 @@ A:
 
 /* GET users listing. */
 router.post("/bypass", function (req, res, next) {
-    // res.json(testJSON)
-    // return
+  // res.json(testJSON)
+  // return
 
-    if (!req.body) {
-        res.json({
-            err: 400,
-            msg: "no content params",
-        });
+  if (!req.body) {
+    res.json({
+      err: 400,
+      msg: "no content params",
+    });
 
-        return;
+    return;
+  }
+  new RequestFactory(QuestType.HAHA).conductChoice().requestGPT(
+    req.body,
+    (chunk) => {
+      res.write(chunk);
+    },
+    (end) => {
+      res.end();
+      // decreaseTryTime(req.auth.user)
+    },
+    (error) => {
+      res.json({
+        ...HTTP_CODE.INTERNAL_ERROR,
+        detail: error,
+      });
     }
-    new RequestFactory(QuestType.HAHA).conductChoice().requestGPT(
-        req.body,
-        (chunk) => {
-            res.write(chunk);
-        },
-        (end) => {
-            res.end();
-            // decreaseTryTime(req.auth.user)
-        },
-        (error) => {
-            res.json({
-                ...HTTP_CODE.INTERNAL_ERROR,
-                detail: error,
-            });
-        }
-    );
+  );
 });
 
 /* GET users listing. */
 router.post("/xhs", function (req, res, next) {
-    if (!req.body.prompt) {
-        res.json({
-            err: 400,
-            msg: "no content params",
-        });
+  if (!req.body.prompt) {
+    res.json({
+      err: 400,
+      msg: "no content params",
+    });
 
-        return;
-    }
+    return;
+  }
 
-    const content = xhsTemplete + req.body.prompt;
+  const content = xhsTemplete + req.body.prompt;
 
-    new RequestFactory(QuestType.HAHA).conductChoice().requestGPT(
+  new RequestFactory(QuestType.HAHA).conductChoice().requestGPT(
+    {
+      messages: [
         {
-            messages: [
-                {
-                    role: "user",
-                    content,
-                },
-            ],
-            stream: true,
-            model: "gpt-3.5-turbo",
-            temperature: 1,
-            presence_penalty: 0,
+          role: "user",
+          content,
         },
-        (chunk) => {
-            res.write(chunk);
-        },
-        (end) => {
-            res.end();
-            // decreaseTryTime(req.auth.user)
-        },
-        (error) => {
-            res.json({
-                ...HTTP_CODE.INTERNAL_ERROR,
-                detail: error,
-            });
-        }
-    );
+      ],
+      stream: true,
+      model: "gpt-3.5-turbo",
+      temperature: 1,
+      presence_penalty: 0,
+    },
+    (chunk) => {
+      res.write(chunk);
+    },
+    (end) => {
+      res.end();
+      // decreaseTryTime(req.auth.user)
+    },
+    (error) => {
+      res.json({
+        ...HTTP_CODE.INTERNAL_ERROR,
+        detail: error,
+      });
+    }
+  );
 
-    // if (!req.auth) {
-    //     return res.json(
-    //         HTTP_CODE.AUTH_ERROR
-    //     )
-    // }
+  // if (!req.auth) {
+  //     return res.json(
+  //         HTTP_CODE.AUTH_ERROR
+  //     )
+  // }
 
-    //检查用户是否在数据库中，在数据库中，并且retry大于0，才可以请求接口
-    // findUser(req.auth.user)
-    //     .then(user => {
-    //         dbLogger.info("find user success", user)
-    //         if (user == null) {
-    //             return res.json(
-    //                 HTTP_CODE.AUTH_ERROR
-    //             )
-    //         }
-    //
-    //         if (!user.retry || user.retry <= 0) {
-    //             return res.json(
-    //                 HTTP_CODE.NO_RETRY_TIME_ERROR
-    //             )
-    //         }
-    //
-    //
-    //         requestXXHByOtherHttpserver(req.body,
-    //             (chunk) => {
-    //                 res.write(chunk)
-    //             },
-    //             (end) => {
-    //                 res.end()
-    //                 decreaseTryTime(req.auth.user)
-    //             },
-    //             (error) => {
-    //                 res.json({
-    //                     ...HTTP_CODE.INTERNAL_ERROR,
-    //                     detail: error
-    //                 })
-    //             }
-    //         )
-    //
-    //     })
-    //     .catch(err => {
-    //         dbLogger.error("find user failed", err)
-    //         res.json({
-    //             ...HTTP_CODE.INTERNAL_ERROR,
-    //             detail: err
-    //         })
-    //     })
+  //检查用户是否在数据库中，在数据库中，并且retry大于0，才可以请求接口
+  // findUser(req.auth.user)
+  //     .then(user => {
+  //         dbLogger.info("find user success", user)
+  //         if (user == null) {
+  //             return res.json(
+  //                 HTTP_CODE.AUTH_ERROR
+  //             )
+  //         }
+  //
+  //         if (!user.retry || user.retry <= 0) {
+  //             return res.json(
+  //                 HTTP_CODE.NO_RETRY_TIME_ERROR
+  //             )
+  //         }
+  //
+  //
+  //         requestXXHByOtherHttpserver(req.body,
+  //             (chunk) => {
+  //                 res.write(chunk)
+  //             },
+  //             (end) => {
+  //                 res.end()
+  //                 decreaseTryTime(req.auth.user)
+  //             },
+  //             (error) => {
+  //                 res.json({
+  //                     ...HTTP_CODE.INTERNAL_ERROR,
+  //                     detail: error
+  //                 })
+  //             }
+  //         )
+  //
+  //     })
+  //     .catch(err => {
+  //         dbLogger.error("find user failed", err)
+  //         res.json({
+  //             ...HTTP_CODE.INTERNAL_ERROR,
+  //             detail: err
+  //         })
+  //     })
 });
 
 router.post("/generate/pics", function (req, res, next) {
-    // res.json(testJSON)
-    // return
+  // res.json(testJSON)
+  // return
 
-    if (!req.body.prompt) {
-        res.json({
-            err: 400,
-            msg: "no prompt params",
-        });
+  if (!req.body.prompt) {
+    res.json({
+      err: 400,
+      msg: "no prompt params",
+    });
 
-        return;
+    return;
+  }
+
+  new RequestFactory(QuestType.AI_PICS).conductChoice().requestGPT(
+    req.body.prompt,
+    (chunk) => {},
+    (end) => {
+      res.json({
+        ...HTTP_CODE.SUCCESS,
+        data: end.shift(),
+      });
+      // decreaseTryTime(req.auth.user)
+    },
+    (error) => {
+      res.json({
+        ...HTTP_CODE.INTERNAL_ERROR,
+        detail: error,
+      });
     }
-
-
-    new RequestFactory(QuestType.AI_PICS).conductChoice().requestGPT(
-        req.body.prompt,
-        (chunk) => {
-
-        },
-        (end) => {
-            res.json({
-                ...HTTP_CODE.SUCCESS,
-                data: end.shift()
-            })
-            // decreaseTryTime(req.auth.user)
-        },
-        (error) => {
-            res.json({
-                ...HTTP_CODE.INTERNAL_ERROR,
-                detail: error,
-            });
-        }
-    );
+  );
 });
 
 module.exports = router;

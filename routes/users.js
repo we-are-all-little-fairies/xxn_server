@@ -1,72 +1,65 @@
-var express = require('express');
+var express = require("express");
 var router = express.Router();
 const jwt = require("jsonwebtoken");
-const {insertUser, findUser} = require("../db/interfaces/users");
-const {HTTP_CODE} = require("../HTTP_CODE");
+const { insertUser, findUser } = require("../db/interfaces/users");
+const { HTTP_CODE } = require("../HTTP_CODE");
 
-const GOD_TOKEN = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7Im5hbWUiOiJ6cyIsInBhc3N3b3JkIjoxMjN9LCJpYXQiOjE2ODQzOTI4NDcsImV4cCI6MTY4NDQ3OTI0N30.awkjAJhLorZNIqfPCv4LGu0jjMfO2SheUzODt-LqFfA"
+const GOD_TOKEN =
+  "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7Im5hbWUiOiJ6cyIsInBhc3N3b3JkIjoxMjN9LCJpYXQiOjE2ODQzOTI4NDcsImV4cCI6MTY4NDQ3OTI0N30.awkjAJhLorZNIqfPCv4LGu0jjMfO2SheUzODt-LqFfA";
 /* GET users listing. */
-router.post('/register', function (req, res, next) {
+router.post("/register", function (req, res, next) {
+  //只有带了上帝token的才可以注册用户
 
-    //只有带了上帝token的才可以注册用户
+  if (req.header("authorization") !== GOD_TOKEN) {
+    return res.json(HTTP_CODE.AUTH_ERROR);
+  }
 
-    if (req.header('authorization') !== GOD_TOKEN) {
-        return res.json(HTTP_CODE.AUTH_ERROR)
-    }
+  if (!req.body.name || !req.body.password) {
+    return res.json(HTTP_CODE.PARMAS_PARSE_ERROR);
+  }
 
-    if (!req.body.name || !req.body.password) {
-        return res.json(HTTP_CODE.PARMAS_PARSE_ERROR)
-    }
+  const token = jwt.sign(
+    { user: { name: req.body.name, password: req.body.password } },
+    SECRET_KEY,
+    { expiresIn: "7d" }
+  );
 
+  actionLogger.info("🚀 → token", token);
 
-    const token = jwt.sign(
-        {user: {name: req.body.name, password: req.body.password}},
-        SECRET_KEY,
-        {expiresIn: '7d'}
-    )
-
-    actionLogger.info('🚀 → token', token)
-
-    insertUser(req.body.name, req.body.password, token)
-        .then((dbres) => {
-            //存db
-            res.json({
-                ...HTTP_CODE.SUCCESS,
-                token,
-            })
-        })
-        .catch(err => {
-            res.json(
-                {
-                    ...HTTP_CODE.INTERNAL_ERROR,
-                    detail: err
-                }
-            )
-        })
-
-
+  insertUser(req.body.name, req.body.password, token)
+    .then((dbres) => {
+      //存db
+      res.json({
+        ...HTTP_CODE.SUCCESS,
+        token,
+      });
+    })
+    .catch((err) => {
+      res.json({
+        ...HTTP_CODE.INTERNAL_ERROR,
+        detail: err,
+      });
+    });
 });
 
-router.get('/query', function (req, res, next) {
-
-    //只有带了上帝token的才可以注册用户
-    findUser(req.auth.user).then(
-        dbRes => {
-            dbLogger.info("find user info success", dbRes)
-            if (dbRes != null && dbRes.retry && dbRes.token) {
-                res.json({
-                    ...HTTP_CODE.SUCCESS,
-                    retry: dbRes.retry
-                })
-            }else {
-                res.json({...HTTP_CODE.INTERNAL_ERROR, detail: "no user"})
-            }
-        }
-    )
-        .catch(err => {
-            dbLogger.error("find user info failed", err)
-            res.json({...HTTP_CODE.INTERNAL_ERROR, detail: err})
-        })
+router.get("/query", function (req, res, next) {
+  //只有带了上帝token的才可以注册用户
+  findUser(req.auth.user)
+    .then((dbRes) => {
+      dbLogger.info("find user info success", dbRes);
+      if (dbRes != null && dbRes.retry && dbRes.token) {
+        res.json({
+          ...HTTP_CODE.SUCCESS,
+          retry: dbRes.retry,
+        });
+      } else {
+        res.json({ ...HTTP_CODE.INTERNAL_ERROR, detail: "no user" });
+      }
+    })
+    .catch((err) => {
+      dbLogger.error("find user info failed", err);
+      res.json({ ...HTTP_CODE.INTERNAL_ERROR, detail: err });
+    });
 });
 
-module.exports = router
+module.exports = router;
