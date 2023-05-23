@@ -8,8 +8,8 @@ module.exports.postChunkRequest = async (data, options, onChunk) => {
           actionLogger.log(chunk.toString());
           onChunk(chunk);
         });
-        res.on("end", (msg) => {
-          actionLogger.log("request end", msg);
+        res.on("end", () => {
+          actionLogger.log("request end");
           resolve();
         });
       })
