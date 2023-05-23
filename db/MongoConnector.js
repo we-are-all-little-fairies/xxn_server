@@ -1,5 +1,4 @@
 const { MongoClient, ServerApiVersion } = require("mongodb");
-const { findUser, insertUser } = require("./interfaces/users");
 const url = "mongodb://localhost:27017/mydb";
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version

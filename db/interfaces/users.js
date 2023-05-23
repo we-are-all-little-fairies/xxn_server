@@ -3,7 +3,7 @@
  * @param token
  */
 
-async function findUser(mapping) {
+module.exports.findUser = async function findUser(mapping) {
   return new Promise((resolve, reject) => {
     MongoDBClient.collection("user")
       .findOne(mapping)
@@ -16,14 +16,14 @@ async function findUser(mapping) {
         reject(err);
       });
   });
-}
+};
 
 /**
  * 对某个用户对使用次数-1
  * @param mapping
  * @returns {Promise<unknown>}
  */
-async function decreaseTryTime(mapping) {
+module.exports.decreaseTryTime = async function decreaseTryTime(mapping) {
   return new Promise((resolve, reject) => {
     MongoDBClient.collection("user")
       .findOneAndUpdate(mapping, {
@@ -40,11 +40,7 @@ async function decreaseTryTime(mapping) {
         reject(err);
       });
   });
-}
-
-module.exports.decreaseTryTime = decreaseTryTime;
-
-module.exports.findUser = findUser;
+};
 
 /**
  * 新增一个用户

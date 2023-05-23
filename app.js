@@ -1,16 +1,17 @@
-var createError = require("http-errors");
-var express = require("express");
-var path = require("path");
-var cookieParser = require("cookie-parser");
-// var logger = require('morgan');
+const express = require("express");
+const cookieParser = require("cookie-parser");
+const magicRouter = require("./routes/magic");
+const userRouter = require("./routes/users");
+const log4js = require("log4js");
+const cors = require("cors");
+const { expressjwt } = require("express-jwt");
+const { errorHandler } = require("./middleware/errorHandler");
 
-var indexRouter = require("./routes/index");
-var magicRouter = require("./routes/magic");
-var userRouter = require("./routes/users");
+global.SECRET_KEY = "we_are_xxn_xixixi^-^"; // 与生成token的密钥要一致!
+global.actionLogger = log4js.getLogger("cheese");
+global.dbLogger = log4js.getLogger("dblogs");
 
-var log4js = require("log4js");
-
-let date = {
+const date = {
   appenders: {
     httpRequestFiles: {
       type: "dateFile",
@@ -53,14 +54,10 @@ let date = {
 };
 
 log4js.configure(date);
+const logger = log4js.getLogger("default");
 
-var logger = log4js.getLogger("default");
+const app = express();
 
-global.actionLogger = log4js.getLogger("cheese");
-global.dbLogger = log4js.getLogger("dblogs");
-var app = express();
-
-// app.use(log4js.connectLogger(logger, { level: "auto" }));
 app.use(
   log4js.connectLogger(logger, {
     level: "auto",
@@ -78,26 +75,15 @@ app.use(
   })
 );
 // 允许跨域资源共享
-const cors = require("cors");
 app.use(cors());
-
-// view engine setup
-app.set("views", path.join(__dirname, "views"));
-app.set("view engine", "jade");
-
-// app.js
-// 导入校验token的模块, 解析JWT字符串, 还原成 JSON 对象 的模块
-const expressjwt = require("express-jwt");
-global.SECRET_KEY = "we_are_xxn_xixixi^-^"; // 与生成token的密钥要一致!
 
 // 1. 使用中间件解析token
 // 2. 使用 .unless 排除无需校验的路由(比如: 登录)
 app.use(
-  expressjwt
-    .expressjwt({
-      secret: SECRET_KEY,
-      algorithms: ["HS256"], // 使用何种加密算法解析
-    })
+  expressjwt({
+    secret: SECRET_KEY,
+    algorithms: ["HS256"], // 使用何种加密算法解析
+  })
     .unless({ path: ["/users/register"] })
     .unless({ path: ["/magic/xhs"] })
     .unless({ path: ["/magic/bypass"] })
@@ -108,43 +94,9 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, "public")));
 
-app.use("/", indexRouter);
 app.use("/magic", magicRouter);
 app.use("/users", userRouter);
-
-// catch 404 and forward to error handler
-app.use(function (req, res, next) {
-  next(createError(404));
-});
-
-app.use(function (err, req, res, next) {
-  if (err.name === "UnauthorizedError") {
-    console.log("UnauthorizedError", req.headers);
-    res
-      .status(401)
-      .json({ code: 401, msg: "invalid token, plz connect the admin" });
-  } else {
-    next(err);
-  }
-});
-
-// error handler
-app.use(function (err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get("env") === "development" ? err : {};
-
-  // render the error page
-  res.status(err.status || 500);
-  res.render("error");
-});
-
-// error handler
-//检查token使用次数，如果超过或者用户不存在，不能调用接口
-app.use(function (err, req, res, next) {
-  next();
-});
+app.use(errorHandler);
 
 module.exports = app;
