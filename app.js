@@ -75,7 +75,7 @@ app.use(
   })
 );
 // 允许跨域资源共享
-app.use(cors());
+// app.use(cors());
 
 // 1. 使用中间件解析token
 // 2. 使用 .unless 排除无需校验的路由(比如: 登录)
