@@ -56,15 +56,18 @@ const requestRed = async (prompt, onChunk) => {
 };
 
 // 哈哈
-const requestHaHa = async (content, onChunk) => {
+const requestHaHa = async (content, onChunk, gptConfig) => {
   return postChunkRequest(
-    {
-      messages: [{ role: "user", content }],
-      stream: true,
-      model: "gpt-3.5-turbo",
-      temperature: 1,
-      presence_penalty: 0,
-    },
+    Object.assign(
+      {
+        messages: [{ role: "user", content }],
+        stream: true,
+        model: "gpt-3.5-turbo",
+        temperature: 1,
+        presence_penalty: 0,
+      },
+      gptConfig
+    ),
     {
       hostname: "hi.haha.ai",
       port: 443,
@@ -88,7 +91,7 @@ const requestHaHa = async (content, onChunk) => {
   );
 };
 
-module.exports.requestGPT = async (prompt, onChunk) => {
+module.exports.requestGPT = async (prompt, onChunk, gptConfig = {}) => {
   // TODO: fallback
-  return requestHaHa(prompt, onChunk);
+  return requestHaHa(prompt, onChunk, gptConfig);
 };

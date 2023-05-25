@@ -4,7 +4,11 @@ const { catchError } = require("../middleware/catchError");
 const { RequestError } = require("../RequestError");
 const { requestGPT } = require("../dispatch/requestGPT");
 const { requestImage } = require("../dispatch/requestImage");
-const { refineTemplete, generateTemp } = require("../templetes/xhsTempletes");
+const {
+  refineTemplete,
+  generateTemp,
+  titleImageTemplete,
+} = require("../templetes/xhsTempletes");
 // const { retryHandler } = require("../middleware/retryHandler");
 
 router.post(
@@ -51,7 +55,13 @@ router.post(
       throw new RequestError("no content params");
     }
 
-    const data = await requestImage(req.body.prompt);
+    const sdPrompt = await requestGPT(
+      titleImageTemplete + req.body.prompt,
+      () => {}
+    );
+
+    console.log(sdPrompt);
+    const data = await requestImage(sdPrompt);
 
     res.json({
       data,

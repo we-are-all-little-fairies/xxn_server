@@ -41,7 +41,10 @@ const refineTemplete = (lastPromt, lastResult, prompt) => {
   }, 并且直接返回给我一篇新的完整文案`;
 };
 
+const titleImageTemplete = `接下来我会给你一篇文章，我需要你根据这篇文章的内容给出 stable diffusion 的 prompt 来生成这篇文章的封面图，并且我会将你给我的结果直接作为参数传递给 stable diffusion，帮我生成英文 prompt，并且不要在 prompt 中包含特殊字符和 emoji，我偏爱 ins 风格的图片并且我希望这张图片尽可能少的包含人。`;
+
 module.exports = {
   generateTemp,
   refineTemplete,
+  titleImageTemplete,
 };
