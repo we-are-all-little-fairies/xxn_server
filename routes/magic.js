@@ -8,6 +8,7 @@ const {
   refineTemplete,
   generateTemp,
   titleImageTemplete,
+  stableDiffusionPromptOptimizeTemplete,
 } = require("../templetes/xhsTempletes");
 // const { retryHandler } = require("../middleware/retryHandler");
 
@@ -55,11 +56,23 @@ router.post(
       throw new RequestError("no content params");
     }
 
-    const sdPrompt = await requestGPT(
-      titleImageTemplete + req.body.prompt,
-      () => {}
-    );
+    let sdPrompt = JSON.parse(
+      await requestGPT(titleImageTemplete + req.body.prompt, () => {}, {
+        stream: false,
+      })
+    ).choices[0].message.content;
 
+    sdPrompt = JSON.parse(
+      await requestGPT(
+        stableDiffusionPromptOptimizeTemplete.replace("{}", sdPrompt),
+        () => {},
+        {
+          stream: false,
+        }
+      )
+    ).choices[0].message.content;
+
+    console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!");
     console.log(sdPrompt);
     const data = await requestImage(sdPrompt);
 
