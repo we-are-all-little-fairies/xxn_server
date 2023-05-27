@@ -8,7 +8,7 @@ const {
   refineTemplete,
   generateTemp,
   titleImageTemplete,
-  stableDiffusionPromptOptimizeTemplete,
+  img2prompt,
 } = require("../templetes/xhsTempletes");
 // const { retryHandler } = require("../middleware/retryHandler");
 
@@ -62,18 +62,16 @@ router.post(
       })
     ).choices[0].message.content;
 
+    console.log(sdPrompt);
+
     sdPrompt = JSON.parse(
-      await requestGPT(
-        stableDiffusionPromptOptimizeTemplete.replace("{}", sdPrompt),
-        () => {},
-        {
-          stream: false,
-        }
-      )
+      await requestGPT(img2prompt + sdPrompt, () => {}, {
+        stream: false,
+      })
     ).choices[0].message.content;
 
-    console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!");
     console.log(sdPrompt);
+
     const data = await requestImage(sdPrompt);
 
     res.json({
