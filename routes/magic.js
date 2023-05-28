@@ -3,7 +3,7 @@ const router = express.Router();
 const { catchError } = require("../middleware/catchError");
 const { RequestError } = require("../RequestError");
 const { requestGPT } = require("../dispatch/requestGPT");
-const { requestImage } = require("../dispatch/requestImage");
+const { requestOpenjourney } = require("../dispatch/requestImage");
 const {
   refineTemplete,
   generateTemp,
@@ -72,7 +72,7 @@ router.post(
 
     console.log(sdPrompt);
 
-    const data = await requestImage(sdPrompt);
+    const data = await requestOpenjourney(sdPrompt);
 
     res.json({
       data,

@@ -1,4 +1,5 @@
 const WebSocket = require("ws");
+const axios = require("axios");
 
 const requestImage = async (content) => {
   const sendHash = () => {
@@ -48,4 +49,29 @@ const requestImage = async (content) => {
   });
 };
 
-module.exports.requestImage = requestImage;
+const requestOpenjourney = async (inputs) => {
+  const response = await axios.post(
+    "https://api-inference.huggingface.co/models/prompthero/openjourney",
+    {
+      inputs,
+    },
+    {
+      headers: {
+        Authorization: "Bearer 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",
+        "content-type": "application/json",
+      },
+      responseType: "arraybuffer",
+    }
+  );
+
+  const imageBytes = Buffer.from(response.data, "binary");
+  const base64Image = imageBytes.toString("base64");
+  const mimeType = response.headers["content-type"];
+  const base64Src = `data:${mimeType};base64,${base64Image}`;
+  return [base64Src];
+};
+
+module.exports = {
+  requestImage,
+  requestOpenjourney,
+};
